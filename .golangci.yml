@@ -1,0 +1,22 @@
+linters:
+  enable-all: true
+  disable:
+    - golint
+    - gomnd
+    - interfacer
+    - scopelint
+    - maligned
+    - wsl
+    - wrapcheck
+    - godox
+    - forbidigo
+    - nlreturn
+    # disabled до исправления кода
+    - tagliatelle # проверка орфографии и стиля в тегах
+    - paralleltest # метод для паралельного запуска - должен быть в тестах
+    - exhaustivestruct # не заполненные структуры
+    - misspell  # орфография (возможно включить надо, ругается на автогенерацию с soa-user)
+    - lll   # на тесты ругается
+    - godot # проверка комментария на точку (нахрена - не понял)
+    - gofumpt # не понял как работает
+    - funlen #TestFastSendRoomNotExists сначала переписать
