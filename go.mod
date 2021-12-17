@@ -6,6 +6,7 @@ require (
 	code.cloudfoundry.org/bytefmt v0.0.0-20211005130812-5bb3c17173e5
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/xeonx/timeago v1.0.0-rc4
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 require (

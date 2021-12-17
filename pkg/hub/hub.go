@@ -13,6 +13,7 @@ type Hub struct {
 }
 
 type Config struct {
+	DryRun         bool
 	MaxReposCount  int
 	ThreadCount    int
 	RequestTimeOut time.Duration
@@ -22,6 +23,7 @@ func New(path string) *Hub {
 	return &Hub{
 		Path: path,
 		Config: Config{
+			DryRun:         true,
 			MaxReposCount:  1000,
 			RequestTimeOut: time.Second * 3,
 			ThreadCount:    25,

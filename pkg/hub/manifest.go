@@ -3,6 +3,7 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -60,6 +61,10 @@ func (h *Hub) Manifest(repo string, tag string) (*Manifest, error) {
 }
 
 func (h *Hub) DeleteManifest(repo string, digest string) error {
+	if h.Config.DryRun {
+		log.Printf("delete %s/%s - DRYRUN\n", repo, digest)
+		return nil
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), h.Config.RequestTimeOut)
 	defer cancel()
 	resp, err := h.methodDelete(ctx, "/v2/%s/manifests/%s", repo, digest)

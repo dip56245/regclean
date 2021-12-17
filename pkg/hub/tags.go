@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
 	"sync"
 	"time"
@@ -82,6 +83,10 @@ func (h *Hub) GetTags(repo string) ([]*TagItem, error) {
 }
 
 func (h *Hub) DeleteTag(repo string, tag string) error {
+	if h.Config.DryRun {
+		log.Printf("delete %s/%s - DRYRUN\n", repo, tag)
+		return nil
+	}
 	manifest, err := h.Manifest(repo, tag)
 	if err != nil {
 		return err

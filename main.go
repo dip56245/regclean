@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/bytefmt"
+	"github.com/dip56245/regclean/pkg/auto"
 	"github.com/dip56245/regclean/pkg/hub"
 	"github.com/urfave/cli/v2"
 	"github.com/xeonx/timeago"
@@ -15,6 +16,7 @@ import (
 
 const (
 	FlagRegistry = "registry"
+	DryRun       = "dry"
 )
 
 func main() {
@@ -28,6 +30,11 @@ func main() {
 				Value:   "http://localhost:5000",
 				Usage:   "uri docker registry example: http://ip:5000",
 				EnvVars: []string{"REGISTRY"},
+			},
+			&cli.BoolFlag{
+				Name:  DryRun,
+				Value: false,
+				Usage: "nothing delete, only output",
 			},
 		},
 		Commands: []*cli.Command{
@@ -63,6 +70,11 @@ func main() {
 				Usage:  "regclean rmall <repo>",
 				Action: actionRmAll,
 			},
+			{
+				Name:   "auto",
+				Usage:  "regclean auto <file.yaml>",
+				Action: actionAuto,
+			},
 		},
 	}
 
@@ -73,8 +85,14 @@ func main() {
 	}
 }
 
-func actionPing(c *cli.Context) error {
+func getHub(c *cli.Context) *hub.Hub {
 	hub := hub.New(c.String(FlagRegistry))
+	hub.Config.DryRun = c.Bool(DryRun)
+	return hub
+}
+
+func actionPing(c *cli.Context) error {
+	hub := getHub(c)
 	if hub.Ping() {
 		log.Println("connection - ok")
 	} else {
@@ -84,7 +102,7 @@ func actionPing(c *cli.Context) error {
 }
 
 func actionList(c *cli.Context) error {
-	h := hub.New(c.String(FlagRegistry))
+	h := getHub(c)
 	list, err := h.ListRepos(hub.SortTypeAbc)
 	for _, a := range list {
 		fmt.Printf("%d\t%s\n", a.TagCount, a.Name)
@@ -93,7 +111,7 @@ func actionList(c *cli.Context) error {
 }
 
 func actionCList(c *cli.Context) error {
-	h := hub.New(c.String(FlagRegistry))
+	h := getHub(c)
 	list, err := h.ListRepos(hub.SortTypeNum)
 	for _, a := range list {
 		fmt.Printf("%d\t%s\n", a.TagCount, a.Name)
@@ -102,7 +120,7 @@ func actionCList(c *cli.Context) error {
 }
 
 func actionTags(c *cli.Context) error {
-	h := hub.New(c.String(FlagRegistry))
+	h := getHub(c)
 	tags, err := h.GetTags(c.Args().First())
 	for _, t := range tags {
 		fmt.Printf("%s\t%s\t%s\n", bytefmt.ByteSize(t.Size), timeago.English.Format(t.CreateTime), t.Name)
@@ -115,7 +133,7 @@ func actionRm(c *cli.Context) error {
 		fmt.Printf("Usage:\n regclean rm <repo> <tag>\n")
 		return nil
 	}
-	h := hub.New(c.String(FlagRegistry))
+	h := getHub(c)
 	return h.DeleteTag(c.Args().Get(0), c.Args().Get(1))
 }
 
@@ -124,6 +142,19 @@ func actionRmAll(c *cli.Context) error {
 		fmt.Printf("Usage:\n regclean rmall <repo>\n")
 		return nil
 	}
-	h := hub.New(c.String(FlagRegistry))
+	h := getHub(c)
 	return h.DeleteAllTags(c.Args().First())
+}
+
+func actionAuto(c *cli.Context) error {
+	if c.Args().Len() != 1 {
+		fmt.Println("regclean auto <file.yaml>")
+		return nil
+	}
+	h := getHub(c)
+	worker, err := auto.New(h, c.Args().First())
+	if err != nil {
+		return err
+	}
+	return worker.Work()
 }
