@@ -3,7 +3,9 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sort"
+	"sync"
 )
 
 type tagsListAnswer struct {
@@ -86,6 +88,27 @@ func (h *Hub) DeleteTag(repo string, tag string) error {
 	if manifest.Digest == "" {
 		return nil
 	}
-	h.DeleteManifest(repo, manifest.Digest)
+	return h.DeleteManifest(repo, manifest.Digest)
+}
+
+func (h *Hub) DeleteAllTags(repo string) error {
+	tags, err := h.GetTags(repo)
+	if err != nil {
+		return err
+	}
+	var wg sync.WaitGroup
+	for _, tag := range tags {
+		wg.Add(1)
+		go func(wg *sync.WaitGroup, repo string, tag *TagItem) {
+			status := "ok"
+			err := h.DeleteManifest(repo, tag.Digest)
+			if err != nil {
+				status = err.Error()
+			}
+			fmt.Printf("delete %s - %s\n", tag.Name, status)
+			wg.Done()
+		}(&wg, repo, tag)
+	}
+	wg.Wait()
 	return nil
 }

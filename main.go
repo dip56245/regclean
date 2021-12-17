@@ -57,6 +57,11 @@ func main() {
 				Usage:  "regclean rm <repo> <tag>",
 				Action: actionRm,
 			},
+			{
+				Name:   "rmall",
+				Usage:  "regclean rmall <repo>",
+				Action: actionRmAll,
+			},
 		},
 	}
 
@@ -111,4 +116,13 @@ func actionRm(c *cli.Context) error {
 	}
 	h := hub.New(c.String(FlagRegistry))
 	return h.DeleteTag(c.Args().Get(0), c.Args().Get(1))
+}
+
+func actionRmAll(c *cli.Context) error {
+	if c.Args().Len() != 1 {
+		fmt.Printf("Usage:\n regclean rmall <repo>\n")
+		return nil
+	}
+	h := hub.New(c.String(FlagRegistry))
+	return h.DeleteAllTags(c.Args().First())
 }
