@@ -10,6 +10,7 @@ import (
 	"code.cloudfoundry.org/bytefmt"
 	"github.com/dip56245/regclean/pkg/hub"
 	"github.com/urfave/cli/v2"
+	"github.com/xeonx/timeago"
 )
 
 const (
@@ -104,7 +105,7 @@ func actionTags(c *cli.Context) error {
 	h := hub.New(c.String(FlagRegistry))
 	tags, err := h.GetTags(c.Args().First())
 	for _, t := range tags {
-		fmt.Printf("%s\t%s\n", bytefmt.ByteSize(t.Size), t.Name)
+		fmt.Printf("%s\t%s\t%s\n", bytefmt.ByteSize(t.Size), timeago.English.Format(t.CreateTime), t.Name)
 	}
 	return err
 }

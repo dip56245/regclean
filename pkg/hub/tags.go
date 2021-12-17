@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 )
 
 type tagsListAnswer struct {
@@ -14,9 +15,11 @@ type tagsListAnswer struct {
 }
 
 type TagItem struct {
-	Name   string
-	Size   uint64
-	Digest string
+	Name         string
+	Size         uint64
+	Digest       string
+	ConfigDigest string
+	CreateTime   time.Time
 }
 
 func (h *Hub) getTags(repo string) ([]string, error) {
@@ -50,19 +53,17 @@ func (h *Hub) GetTags(repo string) ([]*TagItem, error) {
 		go func(tname string) {
 			semaphoreChan <- struct{}{}
 			manifest, err := h.Manifest(repo, tname)
-			if err != nil {
-				outChan <- &TagItem{
-					Name:   tname,
-					Size:   0,
-					Digest: "",
-				}
-			} else {
-				outChan <- &TagItem{
-					Name:   tname,
-					Size:   manifest.Size,
-					Digest: manifest.Digest,
-				}
+			item := TagItem{Name: tname}
+			if err == nil {
+				item.Size = manifest.Size
+				item.Digest = manifest.Digest
+				item.ConfigDigest = manifest.ConfigDigest
 			}
+			createTime, err := h.getCreateTime(repo, item.ConfigDigest)
+			if err == nil {
+				item.CreateTime = createTime
+			}
+			outChan <- &item
 			<-semaphoreChan
 		}(tname)
 	}
@@ -75,7 +76,7 @@ func (h *Hub) GetTags(repo string) ([]*TagItem, error) {
 		}
 	}
 	sort.Slice(out, func(i, j int) bool {
-		return out[i].Name < out[j].Name
+		return out[i].CreateTime.Before(out[j].CreateTime)
 	})
 	return out, nil
 }

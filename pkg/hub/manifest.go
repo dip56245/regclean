@@ -7,8 +7,9 @@ import (
 )
 
 type Manifest struct {
-	Digest string
-	Size   uint64
+	Digest       string
+	ConfigDigest string
+	Size         uint64
 }
 
 type hubResponse struct {
@@ -51,7 +52,11 @@ func (h *Hub) Manifest(repo string, tag string) (*Manifest, error) {
 	if err = decoder.Decode(&item); err != nil {
 		return nil, err
 	}
-	return &Manifest{Digest: resp.Header.Get("Docker-Content-Digest"), Size: item.GetSizeInBytes()}, nil
+	return &Manifest{
+		ConfigDigest: item.Config.Digest,
+		Digest:       resp.Header.Get("Docker-Content-Digest"),
+		Size:         item.GetSizeInBytes(),
+	}, nil
 }
 
 func (h *Hub) DeleteManifest(repo string, digest string) error {
