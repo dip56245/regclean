@@ -77,3 +77,15 @@ func (h *Hub) GetTags(repo string) ([]*TagItem, error) {
 	})
 	return out, nil
 }
+
+func (h *Hub) DeleteTag(repo string, tag string) error {
+	manifest, err := h.Manifest(repo, tag)
+	if err != nil {
+		return err
+	}
+	if manifest.Digest == "" {
+		return nil
+	}
+	h.DeleteManifest(repo, manifest.Digest)
+	return nil
+}

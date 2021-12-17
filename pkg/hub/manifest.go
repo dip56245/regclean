@@ -53,3 +53,14 @@ func (h *Hub) Manifest(repo string, tag string) (*Manifest, error) {
 	}
 	return &Manifest{Digest: resp.Header.Get("Docker-Content-Digest"), Size: item.GetSizeInBytes()}, nil
 }
+
+func (h *Hub) DeleteManifest(repo string, digest string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), h.Config.RequestTimeOut)
+	defer cancel()
+	resp, err := h.methodDelete(ctx, "/v2/%s/manifests/%s", repo, digest)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return nil
+}

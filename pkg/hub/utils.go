@@ -27,3 +27,9 @@ func (h *Hub) methodGetEx(ctx context.Context, modify modifyRequest, url string,
 	}
 	return h.client.Do(req)
 }
+
+func (h *Hub) methodDelete(ctx context.Context, url string, args ...interface{}) (*http.Response, error) {
+	reqURL := h.url(url, args...)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodDelete, reqURL, nil)
+	return h.client.Do(req)
+}
