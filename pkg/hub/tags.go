@@ -44,6 +44,9 @@ func (h *Hub) GetTags(repo string) ([]*TagItem, error) {
 	if err != nil {
 		return []*TagItem{}, err
 	}
+	if len(tags) == 0 {
+		return []*TagItem{}, nil
+	}
 	semaphoreChan := make(chan struct{}, h.Config.ThreadCount)
 	outChan := make(chan *TagItem)
 	defer func() {
