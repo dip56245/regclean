@@ -53,7 +53,7 @@ func (w *Worker) oneWorker(task *Item) {
 			break
 		}
 		if err := module.Setup(task.Repos[i], task.Setup); err != nil {
-			log.Printf("not found module type: %s - SKIP\n", task.Type)
+			log.Printf("error setup module type: %s - %s\n", task.Type, err)
 			break
 		}
 		log.Printf("Work repo: %s\n", task.Repos[i])
