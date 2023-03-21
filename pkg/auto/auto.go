@@ -1,8 +1,9 @@
 package auto
 
 import (
-	"io/ioutil"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/dip56245/regclean/pkg/hub"
 	"gopkg.in/yaml.v2"
@@ -14,14 +15,15 @@ type Worker struct {
 }
 
 type Item struct {
-	Name  string            `yaml:"name"`
-	Type  string            `yaml:"type"`
-	Setup map[string]string `yaml:"setup"`
-	Repos []string          `yaml:"repos"`
+	Name   string            `yaml:"name"`
+	Type   string            `yaml:"type"`
+	Delete bool              `yaml:"delete"`
+	Setup  map[string]string `yaml:"setup"`
+	Repos  []string          `yaml:"repos"`
 }
 
 func New(hub *hub.Hub, fileName string) (*Worker, error) {
-	file, err := ioutil.ReadFile(fileName)
+	file, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +47,7 @@ func (w *Worker) Work() error {
 }
 
 func (w *Worker) oneWorker(task *Item) {
-	log.Printf("Task %s (%s)\n", task.Name, task.Type)
+	fmt.Printf("+ %s (%s)\n", task.Name, task.Type)
 	for i := 0; i < len(task.Repos); i++ {
 		module := GetModule(task.Type)
 		if module == nil {
@@ -56,7 +58,6 @@ func (w *Worker) oneWorker(task *Item) {
 			log.Printf("error setup module type: %s - %s\n", task.Type, err)
 			break
 		}
-		log.Printf("Work repo: %s\n", task.Repos[i])
 		tags, err := w.Hub.GetTags(task.Repos[i])
 		if err != nil {
 			log.Printf("Error: %s\n", err)
@@ -64,6 +65,6 @@ func (w *Worker) oneWorker(task *Item) {
 		for i := 0; i < len(tags); i++ {
 			module.Tag(tags[i])
 		}
-		module.Clean(w.Hub)
+		module.Clean(w.Hub, task.Delete)
 	}
 }

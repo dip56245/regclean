@@ -9,7 +9,8 @@ import (
 type ModuleWorker interface {
 	Setup(repo string, setup map[string]string) error
 	Tag(tag *hub.TagItem)
-	Clean(hub *hub.Hub)
+	Clean(hub *hub.Hub, realDelete bool)
+	PrintSkipped()
 }
 
 func GetModule(name string) ModuleWorker {
