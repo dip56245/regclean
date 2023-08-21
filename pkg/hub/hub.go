@@ -17,9 +17,11 @@ type Config struct {
 	MaxReposCount  int
 	ThreadCount    int
 	RequestTimeOut time.Duration
+	Login          string
+	Password       string
 }
 
-func New(path string) *Hub {
+func New(path string, login string, password string) *Hub {
 	return &Hub{
 		Path: path,
 		Config: Config{
@@ -27,6 +29,8 @@ func New(path string) *Hub {
 			MaxReposCount:  1000,
 			RequestTimeOut: time.Second * 3,
 			ThreadCount:    25,
+			Login:          login,
+			Password:       password,
 		},
 		client: &http.Client{
 			Transport: http.DefaultTransport,

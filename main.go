@@ -15,8 +15,10 @@ import (
 )
 
 const (
-	FlagRegistry = "registry"
-	DryRun       = "dry"
+	FlagRegistry         = "registry"
+	FlagRegistryLogin    = "registry_login"
+	FlagRegistryPassword = "registry_password"
+	DryRun               = "dry"
 )
 
 func main() {
@@ -30,6 +32,18 @@ func main() {
 				Value:   "http://localhost:5000",
 				Usage:   "uri docker registry example: http://ip:5000",
 				EnvVars: []string{"REGISTRY"},
+			},
+			&cli.StringFlag{
+				Name: FlagRegistryLogin,
+				// Value:   "",
+				Usage:   "docker login",
+				EnvVars: []string{"REGISTRY_LOGIN"},
+			},
+			&cli.StringFlag{
+				Name: FlagRegistryPassword,
+				// Value:   "",
+				Usage:   "docker password",
+				EnvVars: []string{"REGISTRY_PASSWORD"},
 			},
 			&cli.BoolFlag{
 				Name:  DryRun,
@@ -86,7 +100,7 @@ func main() {
 }
 
 func getHub(c *cli.Context) *hub.Hub {
-	hub := hub.New(c.String(FlagRegistry))
+	hub := hub.New(c.String(FlagRegistry), c.String(FlagRegistryLogin), c.String(FlagRegistryPassword))
 	hub.Config.DryRun = c.Bool(DryRun)
 	return hub
 }
